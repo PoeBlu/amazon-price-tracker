@@ -37,8 +37,7 @@ class ItemData():
 
     def findSimpleUrl(self):
         ASIN_start = self.URL.find('B0')
-        simple_url = f'https://www.amzn.com/dp/{self.URL[ASIN_start:ASIN_start+10]}'
-        return simple_url
+        return f'https://www.amzn.com/dp/{self.URL[ASIN_start:ASIN_start + 10]}'
 
     def minusOneItemNum(self):
         itemNum_file = os.path.join(sys.path[0], "data", "itemNum.txt")
@@ -52,8 +51,7 @@ class ItemData():
 
     def preTitle(self):
         try:
-            productTitle = self.soup.find(id="productTitle").get_text()
-            return productTitle
+            return self.soup.find(id="productTitle").get_text()
         except Exception:
             self.minusOneItemNum()
             print('Invalid URL!')
@@ -139,11 +137,10 @@ class ItemData():
     def save(self):
         if self.doesExist() == True:
             return 'already_exists'
-        else:
-            target_price = input('Target price for new item: ')
-            self.newFile(target_price)
-            
-            return 'newItem_sucess'
+        target_price = input('Target price for new item: ')
+        self.newFile(target_price)
+
+        return 'newItem_sucess'
 
 class Tracker(ItemData):
     
@@ -157,20 +154,15 @@ class Tracker(ItemData):
         self.target_price = self.findTargetPrice()
 
     def title(self):
-        productTitle = self.soup.find(id="productTitle").get_text()
-        return productTitle
+        return self.soup.find(id="productTitle").get_text()
 
     def price(self): 
         try:
-            productPrice = self.soup.find(id="priceblock_ourprice").get_text()
-            return productPrice
-
+            return self.soup.find(id="priceblock_ourprice").get_text()
         except AttributeError:
 
             try:
-                productPrice = self.soup.find(id="priceblock_dealprice").get_text()
-                return productPrice
-
+                return self.soup.find(id="priceblock_dealprice").get_text()
             except AttributeError:
                 pass
 
@@ -243,17 +235,11 @@ class Communication:
     def findGateway(self):
 
         if settings.reciever_cell_provider == 'at&t':
-            sms_gateway = settings.reciever_phone_number + '@txt.att.net'
-            return sms_gateway
-
-        elif settings.reciever_cell_provider == 'verizon':
-            sms_gateway = settings.reciever_phone_number + '@vtext.com'
-            return sms_gateway
-
+            return settings.reciever_phone_number + '@txt.att.net'
         elif settings.reciever_cell_provider == 'tmobile':
-            sms_gateway = settings.reciever_phone_number + '@tmomail.net'
-            return sms_gateway
-
+            return settings.reciever_phone_number + '@tmomail.net'
+        elif settings.reciever_cell_provider == 'verizon':
+            return settings.reciever_phone_number + '@vtext.com'
         else:
             print('Error! Your cell provider is not supported.')
             exit()
@@ -294,9 +280,7 @@ def listItems():
     with open(csv_item_file, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
 
-        for line in csv_reader:
-            items.append(line[1][:20] + ': ' + line[0])
-        
+        items.extend(line[1][:20] + ': ' + line[0] for line in csv_reader)
     return items
 
 def trackerInstance(URL):
@@ -330,12 +314,7 @@ def trackerLoop():
             with open(csv_item_file, 'r') as csv_file:
                 csv_reader = csv.reader(csv_file)
 
-                for line in csv_reader:
-                    
-                    URL = line[0]
-
-                    URLs.append(URL)
-                    
+                URLs.extend(line[0] for line in csv_reader)
             p.map(trackerInstance, URLs)
             p.close()
 
